@@ -1,0 +1,8 @@
+safeline/frontend/patches/*.patch text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+safeline/static/brand/*.js text eol=lf
+safeline/static/brand/*.svg text eol=lf
+safeline/static/user-front/**/*.js text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+safeline/static/user-front/**/*.css text eol=lf
+safeline/static/user-front/**/*.json text eol=lf
+safeline/static/user-front/**/*.svg text eol=lf
+safeline/templates/*.html text eol=lf whitespace=-blank-at-eol,-blank-at-eof

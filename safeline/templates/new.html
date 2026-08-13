@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    
+    <meta name="apple-itunes-app" content="app-id=6450534064, app-argument=streisand://import/{{profile_url}}">
+    
+    <link rel="icon" type="image/svg+xml" href="../safeline-static/user-front/assets/safeline-mark-f1176af5.svg" />
+<!--     <link rel="stylesheet" href="node_modules/smartbanner.js/dist/smartbanner.min.css"> -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="{{ url_for('common_bp.LoginView:create_pwa_manifest',secret_uuid=g.account.uuid or '')}}">
+    
+    <meta name="description" content="{{ brand.description }}" />
+    <title>{{ brand.full_name }}</title>
+    <script type="module" crossorigin src="../safeline-static/user-front/assets/index-c2412fec.js"></script>
+    <link rel="stylesheet" href="../safeline-static/user-front/assets/index-19a9f519.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    
+    <!--<script src="node_modules/smartbanner.js/dist/smartbanner.min.js"></script>-->
+    <script>
+      window.brand = {{ brand | tojson }};
+      window.appVersion = window.brand.version;
+      window.deepLink = "hiddify://import/{{profile_url}}"
+    </script>
+  </body>
+</html>

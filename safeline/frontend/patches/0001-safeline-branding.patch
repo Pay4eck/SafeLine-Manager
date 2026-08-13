@@ -1,0 +1,394 @@
+diff --git a/index.html b/index.html
+index 0017eed..b5af2f5 100644
+--- a/index.html
++++ b/index.html
+@@ -5,21 +5,22 @@
+     
+     <meta name="apple-itunes-app" content="app-id=6450534064, app-argument=streisand://import/{{profile_url}}">
+     
+-    <link rel="icon" type="image/png" href="./src/assets/images/hiddify-logo.png" />
++    <link rel="icon" type="image/svg+xml" href="./src/assets/svg/safeline-mark.svg" />
+ <!--     <link rel="stylesheet" href="node_modules/smartbanner.js/dist/smartbanner.min.css"> -->
+     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <link rel="icon" type="image/x-icon" href="{{ static_url_for( filename='images/favicon.ico')}}">
+     <link rel="manifest" href="{{ url_for('common_bp.LoginView:create_pwa_manifest',secret_uuid=g.account.uuid or '')}}">
+     
+-    <title>Hiddify | Panel</title>
++    <meta name="description" content="{{ brand.description }}" />
++    <title>{{ brand.full_name }}</title>
+   </head>
+   <body>
+     <div id="root"></div>
+     <script type="module" src="./src/main.tsx"></script>
+     <!--<script src="node_modules/smartbanner.js/dist/smartbanner.min.js"></script>-->
+     <script>
+-      window.appVersion = '{{version}}';
++      window.brand = {{ brand | tojson }};
++      window.appVersion = window.brand.version;
+       window.deepLink = "hiddify://import/{{profile_url}}"
+     </script>
+   </body>
+diff --git a/public/i18n/en.json b/public/i18n/en.json
+index 67fb981..ee1b5a7 100644
+--- a/public/i18n/en.json
++++ b/public/i18n/en.json
+@@ -72,4 +72,4 @@
+     "Used Traffic": "Used Traffic",
+     "Please connect your Telegram account to the panel to know the latest status of your subscription": "Please connect your Telegram account to the panel to know the latest status of your subscription",
+     "Connect To Telegram": "Connect To Telegram"
+-}
+\ No newline at end of file
++}
+diff --git a/public/i18n/fa.json b/public/i18n/fa.json
+index 49f7924..af47b96 100644
+--- a/public/i18n/fa.json
++++ b/public/i18n/fa.json
+@@ -64,4 +64,4 @@
+     "Used Traffic": "ترافیک مصرف شده",
+     "Please connect your Telegram account to the panel to know the latest status of your subscription": "لطفا اکانت تلگرام خود را به پنل متصل کنید تا از آخرین وضعیت اشتراک خودتان مطلع شوید",
+     "Connect To Telegram": "اتصال به تلگرام"
+-}
+\ No newline at end of file
++}
+diff --git a/src/assets/svg/safeline-mark.svg b/src/assets/svg/safeline-mark.svg
+new file mode 100644
+index 0000000..7dd60a7
+--- /dev/null
++++ b/src/assets/svg/safeline-mark.svg
+@@ -0,0 +1,11 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
++  <title id="title">SafeLine</title>
++  <defs>
++    <linearGradient id="safeline-gradient" x1="18" y1="12" x2="108" y2="116" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#6279ff"/>
++      <stop offset="1" stop-color="#3048c8"/>
++    </linearGradient>
++  </defs>
++  <path fill="url(#safeline-gradient)" d="M64 7 111 25v34c0 29-18 51-47 62C35 110 17 88 17 59V25L64 7Z"/>
++  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" d="m39 65 15 15 35-37"/>
++</svg>
+diff --git a/src/pages/home/allConfigs/components/ConfigModal.tsx b/src/pages/home/allConfigs/components/ConfigModal.tsx
+index 27a24ff..a293903 100644
+--- a/src/pages/home/allConfigs/components/ConfigModal.tsx
++++ b/src/pages/home/allConfigs/components/ConfigModal.tsx
+@@ -5,7 +5,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+ import copy from 'clipboard-copy';
+ import { useTranslation } from 'react-i18next';
+ import { QRCode } from 'react-qrcode-logo';
+-import Hlogo from "@assets/images/hiddify-logo-gray-bg-white.png"
++import SafeLineMark from "@assets/svg/safeline-mark.svg"
+ 
+ 
+ 
+@@ -82,7 +82,7 @@ const ConfigModal = ({ closeModal, open, domain, link, title }) => {
+                         bgColor='transparent'
+                         fgColor='#495057'
+                         ecLevel='M'
+-                        logoImage={Hlogo}
++                        logoImage={SafeLineMark}
+                         logoWidth={35}
+                         logoHeight={35}
+                         logoOpacity={1}
+@@ -107,4 +107,4 @@ const ConfigModal = ({ closeModal, open, domain, link, title }) => {
+   )
+ }
+ 
+-export default ConfigModal
+\ No newline at end of file
++export default ConfigModal
+diff --git a/src/pages/home/components/BrandAndLogo.tsx b/src/pages/home/components/BrandAndLogo.tsx
+index 2693956..352f561 100644
+--- a/src/pages/home/components/BrandAndLogo.tsx
++++ b/src/pages/home/components/BrandAndLogo.tsx
+@@ -1,28 +1,31 @@
+ import { Text } from "@designSystem/Text"
+ import { CardMedia } from "@mui/material";
+-import HLogo from '@assets/images/hiddify-logo.png'
++import SafeLineMark from '@assets/svg/safeline-mark.svg'
+ import { getWindowData } from "../../../utils/getWindowData";
+-import { useState } from "react";
+ 
+ const BrandAndLogo = () => {
+-  const [showText, setShowText] = useState(false)
+   // Access the app version from the global variable
+-  const { appVersion } = getWindowData()
++  const { appVersion, brand } = getWindowData()
+ 
+   return (
+     <div className="flex items-end gap-3 mx-3">
+-        <Text onClick={() => window.open('https://hiddify.com', '_blank')} fontSize="xs" fontWeight="light" className="text-[#495057] line-clamp-1">
+-          {showText && 'Powered by Hiddify'} {appVersion ? "v" + appVersion : ''}
+-        </Text>
+-        <div onClick={() => setShowText(!showText)}>
++        <div className="flex flex-col items-end leading-tight">
++          <Text fontSize="xs" fontWeight="light" className="text-[#495057] line-clamp-1">
++            {brand.full_name} {appVersion ? "v" + appVersion : ''}
++          </Text>
++          <a href={brand.upstream_repository_url} target="_blank" rel="noreferrer" className="text-[10px] text-[#6C757D] hover:underline">
++            Based on Hiddify Manager
++          </a>
++        </div>
++        <div>
+           <CardMedia
+               sx={{ height: 24, width: 24 }}
+-              image={HLogo}
+-              title="Hiddify Logo"
++              image={SafeLineMark}
++              title="SafeLine logo"
+           />
+         </div>
+     </div>
+   )
+ }
+ 
+-export default BrandAndLogo
+\ No newline at end of file
++export default BrandAndLogo
+diff --git a/src/pages/home/components/FooterSocialIcons.tsx b/src/pages/home/components/FooterSocialIcons.tsx
+index 29df413..c8be84a 100644
+--- a/src/pages/home/components/FooterSocialIcons.tsx
++++ b/src/pages/home/components/FooterSocialIcons.tsx
+@@ -1,31 +1,13 @@
+-import YouTubeIcon from '@mui/icons-material/YouTube';
+-import TwitterIcon from '@mui/icons-material/Twitter';
+-import TelegramIcon from '@mui/icons-material/Telegram';
+ import GitHubIcon from '@mui/icons-material/GitHub';
++import { getWindowData } from '../../../utils/getWindowData';
+ 
+ const FooterSocialIcons = () => {
++  const { brand } = getWindowData()
+   return (
+     <div className="flex items-center justify-center gap-2">
+         <div 
+-            onClick={() => window.open("https://youtube.com/@hiddify", "_blank")}
+-            className="w-5 h-5 bg-[#455FE9] rounded-full flex items-center justify-center cursor-pointer"
+-        >
+-            <YouTubeIcon sx={{ fontSize: 16, color: 'white' }} />
+-        </div>
+-        <div 
+-            onClick={() => window.open("https://twitter.com/hiddify_com", "_blank")}
+-            className="w-5 h-5 bg-[#455FE9] rounded-full flex items-center justify-center cursor-pointer"
+-        >
+-            <TwitterIcon sx={{ fontSize: 16, color: 'white' }} />
+-        </div>
+-        <div 
+-            onClick={() => window.open("https://t.me/hiddify", "_blank")}
+-            className="w-5 h-5 bg-[#455FE9] rounded-full flex items-center justify-center cursor-pointer"
+-        >
+-            <TelegramIcon sx={{ fontSize: 16, color: 'white', marginRight: 0.2 }} />
+-        </div>
+-        <div 
+-            onClick={() => window.open("https://github.com/hiddify/Hiddify-Manager", "_blank")}
++            onClick={() => window.open(brand.repository_url, "_blank")}
++            title={`${brand.manager_name} on GitHub`}
+             className="w-5 h-5 bg-[#455FE9] rounded-full flex items-center justify-center cursor-pointer"
+         >
+             <GitHubIcon sx={{ fontSize: 16, color: 'white' }} />
+@@ -34,4 +16,4 @@ const FooterSocialIcons = () => {
+   )
+ }
+ 
+-export default FooterSocialIcons
+\ No newline at end of file
++export default FooterSocialIcons
+diff --git a/src/pages/home/components/Header.tsx b/src/pages/home/components/Header.tsx
+index 47c6649..226206e 100644
+--- a/src/pages/home/components/Header.tsx
++++ b/src/pages/home/components/Header.tsx
+@@ -3,7 +3,7 @@ import ShareIcon from '@mui/icons-material/Share';
+ import MenuDropdown from "./MenuDropdown";
+ import { Dispatch, FC, SetStateAction, useState } from "react";
+ import { Button, CardMedia, Tooltip } from "@mui/material";
+-import HLogo from '@assets/images/hiddify-logo.png'
++import SafeLineMark from '@assets/svg/safeline-mark.svg'
+ import { Modal } from "../../../designSystem/Modal";
+ import ShareLinks from "./ShareLinks";
+ import DohContent from "./DohContent";
+@@ -12,6 +12,7 @@ import TranslateIcon from '@mui/icons-material/Translate';
+ import ChangeLangModal from "./ChangeLangModal";
+ import { getCurrentUrl } from "../../../utils/getCurrentUrl";
+ import useAPI from "../../../hooks/useAPI";
++import { getWindowData } from '../../../utils/getWindowData';
+ 
+ type propsTypes = {
+   setShowAllConfigs:  Dispatch<SetStateAction<boolean>>;
+@@ -39,6 +40,7 @@ const Header: FC<propsTypes> = (props) => {
+   const [changeLangModal, setChangeLangModal] = useState(false)
+ 
+   const { t } = useTranslation();
++  const { brand } = getWindowData();
+ 
+   const showMainBodyFun = () => {
+     setShowAllConfigs(false)
+@@ -85,7 +87,7 @@ const Header: FC<propsTypes> = (props) => {
+         <div onClick={showMainBodyFun} className="flex items-center gap-3 cursor-pointer">
+           <CardMedia
+               sx={{ height: 24, width: 24, marginBottom: 1 }}
+-              image={info?.brand_icon_url ? info?.brand_icon_url : HLogo}
++              image={info?.brand_icon_url ? info?.brand_icon_url : SafeLineMark}
+               title="Logo"
+           />
+           <Text 
+@@ -93,7 +95,7 @@ const Header: FC<propsTypes> = (props) => {
+             fontSize="xl" 
+             className="text-[#455FE9]" 
+           >
+-            {info?.brand_title ? info?.brand_title : t('Hiddify')}
++            {info?.brand_title ? info?.brand_title : brand.full_name}
+           </Text>
+         </div>
+         <Button onClick={() => setShareModal(true)} className='bg-transparent [&.css-1e6y48t-MuiButtonBase-root-MuiButton-root]:min-w-[unset]'>
+@@ -105,10 +107,10 @@ const Header: FC<propsTypes> = (props) => {
+           <div onClick={showMainBodyFun} className="flex items-center gap-3 cursor-pointer">
+             <CardMedia
+                 sx={{ height: 24, width: 24, marginBottom: 1 }}
+-                image={info?.brand_icon_url ? info?.brand_icon_url : HLogo}
++                image={info?.brand_icon_url ? info?.brand_icon_url : SafeLineMark}
+                 title="Logo"
+             />
+-            <Text fontWeight="semibold" fontSize="lg" className="hidden lg:block text-[#455FE9]" >{info?.brand_title ? info?.brand_title : t('Hiddify')}</Text>
++            <Text fontWeight="semibold" fontSize="lg" className="hidden lg:block text-[#455FE9]" >{info?.brand_title ? info?.brand_title : brand.full_name}</Text>
+           </div>
+           <Text 
+             onClick={showMainBodyFun} 
+@@ -181,4 +183,4 @@ const Header: FC<propsTypes> = (props) => {
+   )
+ }
+ 
+-export default Header
+\ No newline at end of file
++export default Header
+diff --git a/src/pages/home/components/PreLoading.tsx b/src/pages/home/components/PreLoading.tsx
+index 0267bae..344dc78 100644
+--- a/src/pages/home/components/PreLoading.tsx
++++ b/src/pages/home/components/PreLoading.tsx
+@@ -1,21 +1,23 @@
+ import { Text } from '../../../designSystem/Text'
+-import HLogoSvg from '@assets/svg/hiddify-logo.svg?react';
++import SafeLineMark from '@assets/svg/safeline-mark.svg?react';
++import { getWindowData } from '../../../utils/getWindowData';
+ 
+ 
+ 
+ 
+ const PreLoading = () => {
++  const { brand } = getWindowData()
+   return (
+     <div className='bg-[#F4F4F9] w-screen h-screen overflow-hidden md:flex md:justify-center md:items-center'>
+         <div className='w-full h-full bg-transparent flex flex-col gap-5 items-center justify-center'>
+             <div className='w-[250px] h-[250px] md:w-[350px] md:h-[350px] bg-gray-300 bg-opacity-50 rounded-full flex items-center justify-center p-20'>
+-              <HLogoSvg />
++              <SafeLineMark />
+             </div>
+-            <Text fontSize='lg' fontWeight='semibold' className='text-[#455FE9]'>Hiddify</Text>
+-            <Text fontSize='lg' fontWeight='semibold' className='text-[#455FE9]'>Powered By Hiddify.com</Text>
++            <Text fontSize='lg' fontWeight='semibold' className='text-[#455FE9]'>{brand.full_name}</Text>
++            <a href={brand.upstream_repository_url} target="_blank" rel="noreferrer" className="text-sm text-[#6C757D] hover:underline">Based on Hiddify Manager</a>
+         </div>
+     </div>
+   )
+ }
+ 
+-export default PreLoading
+\ No newline at end of file
++export default PreLoading
+diff --git a/src/pages/home/components/ShareLinks.tsx b/src/pages/home/components/ShareLinks.tsx
+index 7f0813b..d97bcd8 100644
+--- a/src/pages/home/components/ShareLinks.tsx
++++ b/src/pages/home/components/ShareLinks.tsx
+@@ -8,8 +8,7 @@ import CircularProgress from '@mui/material/CircularProgress';
+ import { QRCode } from 'react-qrcode-logo';
+ import copy from 'clipboard-copy';
+ import { useTranslation } from 'react-i18next';
+-import HlogoPurpleBg from "@assets/images/hiddify-logo-gray-bg-purple.png"
+-import HlogoWhiteBg from "@assets/images/hiddify-logo-gray-bg-white.png"
++import SafeLineMark from "@assets/svg/safeline-mark.svg"
+ import React from 'react';
+ 
+ 
+@@ -95,7 +94,7 @@ const ShareLinks: React.FC<propsTypes> = ({ isModalOpen }) => {
+                   bgColor='transparent'
+                   fgColor='#495057'
+                   ecLevel='M'
+-                  logoImage={isModalOpen ? HlogoWhiteBg : HlogoPurpleBg}
++                  logoImage={SafeLineMark}
+                   logoWidth={50}
+                   logoHeight={50}
+                   logoOpacity={1}
+@@ -153,4 +152,4 @@ const ShareLinks: React.FC<propsTypes> = ({ isModalOpen }) => {
+   )
+ }
+ 
+-export default ShareLinks
+\ No newline at end of file
++export default ShareLinks
+diff --git a/src/pages/home/teleProxy/TeleProxy.tsx b/src/pages/home/teleProxy/TeleProxy.tsx
+index 4c876d7..d491bef 100644
+--- a/src/pages/home/teleProxy/TeleProxy.tsx
++++ b/src/pages/home/teleProxy/TeleProxy.tsx
+@@ -17,7 +17,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+ import copy from 'clipboard-copy';
+ import { useTranslation } from 'react-i18next';
+ import { QRCode } from 'react-qrcode-logo';
+-import Hlogo from "@assets/images/hiddify-logo-gray-bg-white.png"
++import SafeLineMark from "@assets/svg/safeline-mark.svg"
+ 
+ 
+ 
+@@ -98,7 +98,7 @@ function Row(props) {
+                     bgColor='transparent'
+                     fgColor='#495057'
+                     ecLevel='M'
+-                    logoImage={Hlogo}
++                    logoImage={SafeLineMark}
+                     logoWidth={35}
+                     logoHeight={35}
+                     logoOpacity={1}
+diff --git a/src/utils/getWindowData.tsx b/src/utils/getWindowData.tsx
+index 1428cf0..8b022c3 100644
+--- a/src/utils/getWindowData.tsx
++++ b/src/utils/getWindowData.tsx
+@@ -3,6 +3,14 @@
+ type windowDataTypes = {
+     appVersion: string;
+     deepLink: string;
++    brand: {
++        product_name: string;
++        full_name: string;
++        manager_name: string;
++        version: string;
++        repository_url: string;
++        upstream_repository_url: string;
++    };
+ }
+ 
+ export const getWindowData = (): windowDataTypes => {
+@@ -12,5 +20,8 @@ export const getWindowData = (): windowDataTypes => {
+     //@ts-ignore
+     const deepLink: string = window.deepLink;
+ 
+-    return { deepLink, appVersion }
+-}
+\ No newline at end of file
++    //@ts-ignore
++    const brand: windowDataTypes["brand"] = window.brand;
++
++    return { deepLink, appVersion, brand }
++}
+diff --git a/yarn.lock b/yarn.lock
+index ef6a2b4..e645f93 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -2526,6 +2526,11 @@ minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
+   dependencies:
+     brace-expansion "^1.1.7"
+ 
++moment@^2.29.1:
++  version "2.30.1"
++  resolved "https://registry.yarnpkg.com/moment/-/moment-2.30.1.tgz#f8c91c07b7a786e30c59926df530b4eac96974ae"
++  integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
++
+ ms@2.1.2:
+   version "2.1.2"
+   resolved "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz"

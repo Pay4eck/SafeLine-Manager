@@ -24,6 +24,8 @@ The suite currently checks:
 - exact Xray version selection from Hiddify's package lock;
 - checksum-verified installation of the official pinned Xray binary in CI;
 - full inherited server-config rendering and Xray's native `run -test` mode.
+- centralized SafeLine 0.1 brand values and compatibility-boundary wiring;
+- exact modern frontend source/toolchain pins and generated branding invariants.
 
 See `docs/XRAY_RUNTIME_VALIDATION.md` for the exact version chain, commands,
 coverage, explicit runtime fixtures, and remaining integration gaps.

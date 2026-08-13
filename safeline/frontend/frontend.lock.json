@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/hiddify/hiddify-user-front.git",
+  "source_commit": "5dc87f743f233b8fd0ff0c40b9a3ddbbe7c2812a",
+  "source_commit_date": "2024-03-28T20:27:00+03:30",
+  "gh_pages_commit": "2d3edc24321f80c3292465f4034c94e522d4031d",
+  "gh_pages_bundle": "assets/index-ccb9873c.js",
+  "gh_pages_bundle_sha256": "a0a7af56079d68e83256da0bbb6a019839f598fc2d0f8aad8b3be25c48a0689c",
+  "panel_transformed_bundle_sha256": "cb03c4e2c2d78f661e9c1e16309534f6685b5c5682c21ac2d0c4302847e1c32e",
+  "patch": "patches/0001-safeline-branding.patch",
+  "patch_sha256": "cfc8021e0a490a271f2a5ade81d70b6b2d02f36609b431bdb82a2c2a0e717db4",
+  "node_version": "16.20.2",
+  "yarn_version": "1.22.22",
+  "build_command": "yarn install --frozen-lockfile && yarn build"
+}

@@ -58,3 +58,47 @@ jobs:
 
       - name: Run SafeLine characterization tests
         run: python -m unittest discover -s tests -v
+
+  frontend-reproducibility:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out SafeLine sources
+        uses: actions/checkout@v4
+
+      - name: Set up the upstream frontend Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16.20.2"
+
+      - name: Install the pinned Yarn version
+        run: npm install --global yarn@1.22.22
+
+      - name: Check out the exact upstream frontend source
+        run: |
+          git init .test-runtime/user-front
+          git -C .test-runtime/user-front config core.autocrlf false
+          git -C .test-runtime/user-front remote add origin https://github.com/hiddify/hiddify-user-front.git
+          git -C .test-runtime/user-front fetch --depth=1 origin 5dc87f743f233b8fd0ff0c40b9a3ddbbe7c2812a
+          git -C .test-runtime/user-front checkout --detach FETCH_HEAD
+          test "$(git -C .test-runtime/user-front rev-parse HEAD)" = "5dc87f743f233b8fd0ff0c40b9a3ddbbe7c2812a"
+
+      - name: Apply the reviewed SafeLine source patch
+        run: |
+          git -C .test-runtime/user-front apply --check ../../safeline/frontend/patches/0001-safeline-branding.patch
+          git -C .test-runtime/user-front apply ../../safeline/frontend/patches/0001-safeline-branding.patch
+
+      - name: Build with the corrected frozen lockfile
+        working-directory: .test-runtime/user-front
+        run: |
+          test "$(node --version)" = "v16.20.2"
+          test "$(yarn --version)" = "1.22.22"
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Compare all generated SafeLine frontend files
+        run: >-
+          python safeline/frontend/publish_frontend.py
+          --dist .test-runtime/user-front/dist
+          --check-static safeline/static/user-front
+          --check-template safeline/templates/new.html

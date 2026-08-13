@@ -149,17 +149,18 @@ adapter that adds idempotency, authorization and audit logging.
 The browser page is `panel/user/templates/new.html`. It loads the compiled
 `static/new/assets/index-ccb9873c.js` bundle and obtains profile/config data
 from the user API. The release has no package manifest, source tree or source
-map for that bundle. The provided `get_new.sh` script pulls an unpinned
-`gh-pages` build from a different repository.
+map beside that bundle. Follow-up investigation identified the exact upstream
+source and deployment commits; see `FRONTEND_SOURCE_AUDIT.md`. The provided
+upstream `get_new.sh` still pulls an unpinned `gh-pages` branch.
 
-SafeLine should replace this delivery path with:
+SafeLine 0.1 replaces the active delivery path with:
 
-1. a SafeLine-owned frontend source directory or repository;
-2. a locked dependency manifest;
-3. a reproducible build that emits hashed assets plus a generated manifest;
-4. a small server template that reads the manifest instead of hard-coding a
-   bundle filename;
-5. API contracts covered by tests.
+1. the exact source commit plus a SafeLine-owned, reviewed source patch;
+2. locked Node and Yarn versions and a corrected frozen dependency lock;
+3. a reproducible build that emits hashed assets;
+4. an isolated SafeLine template/static route selected ahead of the inherited
+   template;
+5. API and frontend invariants covered by characterization tests and CI.
 
 ## Configuration generation and usage accounting
 
@@ -222,7 +223,8 @@ that only needs rebranding.
 ### Blocking before a paid launch
 
 - Resolve the mixed GPL/CC0/CC BY-NC-SA licensing and third-party asset terms.
-- Replace or obtain a reproducible source for the user frontend.
+- Maintain the newly pinned user-frontend build and decide whether to vendor
+  the source snapshot or move it to a dedicated SafeLine frontend fork.
 - Move updates and artifacts to SafeLine-controlled, pinned release channels.
 - Define a supported Linux distribution and test clean installation/rollback.
 
@@ -248,7 +250,7 @@ penetration test.
 | Usage drivers | Keep, test, then simplify to supported cores |
 | User/domain/proxy models | Keep behind a SafeLine service layer initially |
 | Admin UI | Keep as an internal fallback while a minimal SafeLine admin is built |
-| Compiled user portal | Replace with reproducible SafeLine frontend source |
+| Compiled user portal | Replaced at the active presentation boundary by a reproducible source build |
 | Authentication/API keys | Compatibility only; design a new credential model |
 | Installer/updater | Fork early and point only to SafeLine artifacts |
 | Optional protocols/services | Disable first; remove only after dependency tests |

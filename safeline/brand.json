@@ -1,0 +1,10 @@
+{
+  "product_name": "SafeLine",
+  "full_name": "SafeLine VPN",
+  "manager_name": "SafeLine Manager",
+  "version": "0.1.0",
+  "description": "SafeLine VPN connection profile",
+  "repository_url": "https://github.com/Pay4eck/SafeLine-Manager",
+  "upstream_name": "Hiddify Manager",
+  "upstream_repository_url": "https://github.com/hiddify/Hiddify-Manager"
+}
