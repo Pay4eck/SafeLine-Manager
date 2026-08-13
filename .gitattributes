@@ -9,3 +9,4 @@ safeline/templates/*.html text eol=lf whitespace=-blank-at-eol,-blank-at-eof
 smoke-test/*.sh text eol=lf
 smoke-test/*.lock text eol=lf
 smoke-test/*.sha256 text eol=lf
+common/packages.lock text eol=lf

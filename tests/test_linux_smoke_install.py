@@ -12,6 +12,11 @@ from ast_helpers import source_path
 SMOKE_ROOT = source_path("smoke-test")
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
+
 def parse_shell_lock(path: Path) -> dict[str, str]:
     result: dict[str, str] = {}
     for raw_line in path.read_text(encoding="utf-8").splitlines():
@@ -59,11 +64,11 @@ class LinuxSmokeInstallPreparationTests(unittest.TestCase):
         self.assertEqual(self.lock["PYTHON_VERSION"], "3.13.9")
 
         self.assertEqual(
-            hashlib.sha256(source_path("common/packages.lock").read_bytes()).hexdigest(),
+            canonical_text_sha256(source_path("common/packages.lock")),
             self.lock["PACKAGES_LOCK_SHA256"],
         )
         self.assertEqual(
-            hashlib.sha256(source_path("hiddify-panel/src/uv.lock").read_bytes()).hexdigest(),
+            canonical_text_sha256(source_path("hiddify-panel/src/uv.lock")),
             self.lock["PANEL_UV_LOCK_SHA256"],
         )
 
