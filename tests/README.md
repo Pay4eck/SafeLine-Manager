@@ -1,13 +1,14 @@
 # SafeLine characterization tests
 
 These tests protect the inherited Hiddify `v12.3.3` behavior while SafeLine is
-being separated from the upstream product. They deliberately use only the
-Python standard library, so they can run before the full privileged Linux stack
-is installed.
+being separated from the upstream product. The small test dependency set is
+pinned independently, so the suite can run before the full privileged Linux
+stack is installed.
 
 Run them from the repository root:
 
 ```text
+python -m pip install --requirement tests/requirements.txt
 python -m unittest discover -s tests -v
 ```
 
@@ -17,6 +18,8 @@ The suite currently checks:
 - the exact inherited user activation and expiration semantics;
 - the administrator/user API surface required by the future SafeLine adapter;
 - VLESS Reality template invariants and their coupling to the Xray usage driver;
+- actual Jinja rendering and JSON5 parsing of a representative VLESS Reality
+  inbound;
 - locked runtime package metadata and the config-application pipeline.
 
 ## Updating the baseline
