@@ -1,0 +1,27 @@
+name: SafeLine characterization
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  characterization:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the pinned Manager and Panel sources
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run SafeLine characterization tests
+        run: python -m unittest discover -s tests -v

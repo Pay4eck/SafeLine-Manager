@@ -1,0 +1,26 @@
+{
+  "manager": {
+    "tag": "v12.3.3",
+    "commit": "736aae99a68aab63568c515147a871d2723f18c7"
+  },
+  "panel": {
+    "tag": "v12.3.3",
+    "commit": "cf2e60de038c7d658d2bf4b2d84c7b433e3c918d"
+  },
+  "sha256": {
+    "VERSION": "9acc0fc978ce4d83a5370ac9301986bfb6c5c57f8f38cca012f55abeb66b65e9",
+    "common/jinja.py": "7eebb884ea5191e71500fe457045f8812b1991c910c94e5502d222a1c91f91b8",
+    "common/packages.lock": "c5b7217b45cb4cf88f68382dba32764a9af97219e98c2b334be6081488757941",
+    "hiddify-panel/src/hiddifypanel/auth.py": "2c9987e113aa66fe5e8ffe26d5bd31bdb130da67894f30d1d661420e6e76de41",
+    "hiddify-panel/src/hiddifypanel/drivers/xray_api.py": "eb8281d81fb44f443f8598e8819363b70a4341b8f9c803cd172cef6f62aed7c7",
+    "hiddify-panel/src/hiddifypanel/models/user.py": "6502c13f9c512084b0b1b60c6487a621102469001d42ff4a2256dd0c887eadac",
+    "hiddify-panel/src/hiddifypanel/panel/commercial/restapi/v2/admin/user_api.py": "80068e20784788b4fc1e192edd6aad4048d26f3e0d63529d440fb01fd3f0afa8",
+    "hiddify-panel/src/hiddifypanel/panel/commercial/restapi/v2/admin/users_api.py": "5d1288827d0f9d6ff8cd1eb0ae827299fdff0424c42ca42b40e9369a819e3a25",
+    "hiddify-panel/src/hiddifypanel/panel/user/user.py": "fa979aaacedddf93be36218b7156631b888374e115ff7a227e13e4384f602d10",
+    "hiddify-panel/src/pyproject.toml": "08b4206d54a561f5f78d1248ba6037a7c4b4a2a86ab27fe876f9b5f5a4fc13e1",
+    "install.sh": "ca1cbc9d4a4aef64f2711d9c324f296793b0da0f6f974eed1bd6359acb74994b",
+    "update.sh": "3b07b78f38aa9ab24d0f22b76a13fec3a1a7feb0eea31a145fb08f8d0ffeff76",
+    "xray/configs/05_inbounds_02_reality_main.json.j2": "0c729948d73a1135707153f545cc5149d66e6f673c4ef4b23df3c9e54f358357",
+    "xray/configs/common/protocols/vless.pj2": "32930db97d9ccd6471cc690fdf792c93552c77e8f3ac616611e015839c58e442"
+  }
+}
