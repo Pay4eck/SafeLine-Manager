@@ -1,5 +1,13 @@
 #!/bin/bash
 cd $(dirname -- "$0")
+
+if [ -f "./safeline/brand.py" ]; then
+    echo "SafeLine Manager 0.1 has no production update channel." >&2
+    echo "This checkout is pinned; update.sh will not download Manager or Panel from Hiddify." >&2
+    echo "Reinstall an explicitly approved SafeLine commit on a disposable VPS instead." >&2
+    exit 78
+fi
+
 source ./common/utils.sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 

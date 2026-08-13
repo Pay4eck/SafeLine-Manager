@@ -29,7 +29,15 @@ systemctl enable hiddify-panel-background-tasks.service
 if [ -n "$HIDDIFY_PANLE_SOURCE_DIR" ]; then
     echo "NOTICE: building hiddifypanel package from source..."
     echo "NOTICE: the source dir $HIDDIFY_PANLE_SOURCE_DIR"
-    uv pip install -e "$HIDDIFY_PANLE_SOURCE_DIR"
+    if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
+        if [ ! -f "$HIDDIFY_PANLE_SOURCE_DIR/uv.lock" ]; then
+            error "SafeLine smoke install requires the pinned Panel uv.lock"
+            exit 31
+        fi
+        UV_PROJECT_ENVIRONMENT="$venv_path" uv sync --frozen --no-dev --project "$HIDDIFY_PANLE_SOURCE_DIR"
+    else
+        uv pip install -e "$HIDDIFY_PANLE_SOURCE_DIR"
+    fi
 fi
 
 rm -rf /etc/cron.d/{hiddify_usage_update,hiddify_auto_backup}
@@ -38,13 +46,25 @@ rm -rf /etc/cron.d/{hiddify_usage_update,hiddify_auto_backup}
 service cron reload >/dev/null 2>&1
 
 
-##### download videos
+##### download geo databases
 
-if [[ ! -e "GeoLite2-ASN.mmdb" || $(find "GeoLite2-ASN.mmdb" -mtime +1) ]]; then
-    curl --connect-timeout 10 -sL -o GeoLite2-ASN.mmdb1 https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb && mv GeoLite2-ASN.mmdb1 GeoLite2-ASN.mmdb
-fi
-if [[ ! -e "GeoLite2-Country.mmdb" || $(find "GeoLite2-Country.mmdb" -mtime +1) ]]; then
-    curl --connect-timeout 10 -sL -o GeoLite2-Country.mmdb1 https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb && mv GeoLite2-Country.mmdb1 GeoLite2-Country.mmdb
+if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
+    source ../smoke-test/components.lock
+    printf '%s  %s\n' "$GEOLITE_ASN_SHA256" "GeoLite2-ASN.mmdb" | sha256sum --check --status || {
+        error "Pinned GeoLite2-ASN.mmdb is missing or has an invalid checksum"
+        exit 32
+    }
+    printf '%s  %s\n' "$GEOLITE_COUNTRY_SHA256" "GeoLite2-Country.mmdb" | sha256sum --check --status || {
+        error "Pinned GeoLite2-Country.mmdb is missing or has an invalid checksum"
+        exit 33
+    }
+else
+    if [[ ! -e "GeoLite2-ASN.mmdb" || $(find "GeoLite2-ASN.mmdb" -mtime +1) ]]; then
+        curl --connect-timeout 10 -sL -o GeoLite2-ASN.mmdb1 https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb && mv GeoLite2-ASN.mmdb1 GeoLite2-ASN.mmdb
+    fi
+    if [[ ! -e "GeoLite2-Country.mmdb" || $(find "GeoLite2-Country.mmdb" -mtime +1) ]]; then
+        curl --connect-timeout 10 -sL -o GeoLite2-Country.mmdb1 https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb && mv GeoLite2-Country.mmdb1 GeoLite2-Country.mmdb
+    fi
 fi
 
 # bash download_yt.sh &

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Disabled in SafeLine Manager 0.1: this legacy bootstrap downloads installer code from Hiddify branches/tags." >&2
+echo "Use smoke-test/install-pinned.sh with an exact Pay4eck/SafeLine-Manager commit." >&2
+exit 78
+
 if [[ "$VER" != "" ]];then
     set -- $VER  $@
 

@@ -1,5 +1,14 @@
 #!/bin/bash
 cd $(dirname -- "$0")
+
+if [ -f "/opt/hiddify-manager/.safeline-smoke-install" ]; then
+    export SAFELINE_SMOKE_TEST_MODE=1
+    export HIDDIFY_DISABLE_UPDATE=true
+    export HIDDIFY_PANLE_SOURCE_DIR=/opt/hiddify-manager/hiddify-panel/src
+    export UV_NO_SYSTEM_CONFIG=1
+    export UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python
+fi
+
 source ./common/utils.sh
 NAME="0-install"
 LOG_FILE="$(log_file $NAME)"
@@ -50,6 +59,10 @@ function main() {
         # is_installed xray || bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version 1.8.4
         
         install_run hiddify-panel
+
+        if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
+            bash ./smoke-test/configure-profile.sh
+        fi
     fi
     
     # source common/set_config_from_hpanel.sh
@@ -75,7 +88,11 @@ function main() {
             install_run haproxy
         
             update_progress "${PROGRESS_ACTION}" "Getting Certificates" 30
-            install_run acme.sh 
+            if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
+                echo "SafeLine smoke mode: skip the moving get.acme.sh bootstrap; local self-signed setup remains available."
+            else
+                install_run acme.sh
+            fi
         )&
         
         update_progress "${PROGRESS_ACTION}" "Personal SpeedTest" 35

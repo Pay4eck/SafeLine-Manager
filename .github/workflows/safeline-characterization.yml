@@ -28,6 +28,22 @@ jobs:
       - name: Install pinned characterization dependencies
         run: python -m pip install --requirement tests/requirements.txt
 
+      - name: Check Linux smoke-test shell syntax
+        run: >-
+          bash -n
+          smoke-test/install-pinned.sh
+          smoke-test/configure-profile.sh
+          smoke-test/verify-install.sh
+          install.sh
+          update.sh
+          hiddify-panel/install.sh
+          common/hiddify_installer.sh
+          common/download.sh
+          common/download_install.sh
+          common/download_install_easylink.sh
+          common/downgrade.sh
+          common/docker-installer.sh
+
       - name: Install checksum-verified Xray 26.3.27
         run: >-
           python tests/scripts/install_verified_xray.py

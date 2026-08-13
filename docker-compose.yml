@@ -1,20 +1,10 @@
 
 services:
   hiddify:
-    #only for local build and development
-    #build: .
-
-    #latest release version
-    image: ghcr.io/hiddify/hiddify-manager:latest
-
-    #latest beta version
-    #image: ghcr.io/hiddify/hiddify-manager:beta
-
-    #latest build of current development
-    # image: ghcr.io/hiddify/hiddify-manager:dev
-
-    #specific version
-    #image: ghcr.io/hiddify/hiddify-manager:v10.80.0
+    # SafeLine 0.1 has no production container channel. Build only the current
+    # checkout so docker compose cannot pull Manager/Panel from Hiddify latest.
+    build: .
+    image: safeline-manager:0.1.0-local
     ports:
       - "80:80"
       - "443:443"

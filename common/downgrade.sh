@@ -1,3 +1,7 @@
+echo "Disabled in SafeLine Manager 0.1: the legacy downgrade installs Hiddify latest." >&2
+echo "Rollback this smoke test by restoring the disposable VPS snapshot or recreating the VPS." >&2
+exit 78
+
 cd /opt/hiddify-manager/hiddify-panel
 
 source /opt/hiddify-manager/common/utils.sh

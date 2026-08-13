@@ -1,5 +1,12 @@
 #!/bin/bash
 cd $(dirname -- "$0")
+
+if [ -f "../safeline/brand.py" ] && [[ " $* " != *" docker "* ]]; then
+    echo "Disabled in SafeLine Manager 0.1: the legacy installer downloads Manager/Panel from Hiddify channels." >&2
+    echo "Use smoke-test/install-pinned.sh with an exact Pay4eck/SafeLine-Manager commit." >&2
+    exit 78
+fi
+
 source ./utils.sh
 if [ "$(id -u)" -ne 0 ]; then
     echo 'This script must be run by root' >&2

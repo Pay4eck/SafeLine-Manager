@@ -1,4 +1,9 @@
 #!/bin/sh
+
+echo "Disabled in SafeLine Manager 0.1: this legacy bootstrap installs an upstream Hiddify release." >&2
+echo "Use smoke-test/install-pinned.sh with an exact Pay4eck/SafeLine-Manager commit." >&2
+exit 78
+
 if [ "$(id -u)" -ne 0 ]; then
     echo 'This script must be run by root' >&2
     exit 1

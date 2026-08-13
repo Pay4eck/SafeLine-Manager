@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Disabled in SafeLine Manager 0.1: the legacy Docker bootstrap clones/pulls Hiddify latest." >&2
+echo "The first SafeLine smoke test uses the pinned native Linux installer documented in docs/LINUX_SMOKE_TEST.md." >&2
+exit 78
+
 # Check if Docker is installed, if not, install it
 command -v docker &>/dev/null || curl -fsSL https://get.docker.com | sh
 
