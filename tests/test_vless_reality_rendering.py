@@ -86,9 +86,12 @@ class VlessRealityRenderingTests(unittest.TestCase):
     def test_reality_tls_settings_preserve_sni_key_and_short_id(self):
         settings = self.render()["inbounds"][0]["streamSettings"]["realitySettings"]
         self.assertFalse(settings["show"])
-        self.assertEqual(settings["dest"], "www.cloudflare.com:443")
-        self.assertEqual(settings["serverNames"], ["www.cloudflare.com"])
-        self.assertEqual(settings["privateKey"], "safeline-test-reality-private-key")
+        self.assertEqual(settings["dest"], "tcp.reality.example:443")
+        self.assertEqual(settings["serverNames"], ["tcp.reality.example"])
+        self.assertEqual(
+            settings["privateKey"],
+            "dwdtCnMYpX08FsFyUbJmRd9ML4frwJkqsXf7pR25LCo",
+        )
         self.assertEqual(settings["shortIds"], ["", "0123456789abcdef"])
 
     def test_debug_log_level_enables_reality_diagnostics(self):

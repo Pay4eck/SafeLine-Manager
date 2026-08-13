@@ -1,0 +1,32 @@
+{
+  "version": "26.3.27",
+  "selection": {
+    "manager_release": "v12.3.3",
+    "manager_commit": "736aae99a68aab63568c515147a871d2723f18c7",
+    "install_script": "xray/install.sh",
+    "requested_version": "",
+    "version_resolver": "common/package_manager.sh:get_latest_version",
+    "package_lock": "common/packages.lock",
+    "rule": "highest version for package xray and the host architecture"
+  },
+  "artifacts": {
+    "linux-amd64": {
+      "source": "hiddify-v12.3.3-packages.lock",
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-64.zip",
+      "sha256": "23cd9af937744d97776ee35ecad4972cf4b2109d1e0fe6be9930467608f7c8ae",
+      "executable": "xray"
+    },
+    "linux-arm64": {
+      "source": "hiddify-v12.3.3-packages.lock",
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-arm64-v8a.zip",
+      "sha256": "4d30283ae614e3057f730f67cd088a42be6fdf91f8639d82cb69e48cde80413c",
+      "executable": "xray"
+    },
+    "windows-amd64": {
+      "source": "official-github-release-api-digest",
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-windows-64.zip",
+      "sha256": "d004c39288ce9ada487c6f398c7c545f7d749e44bdfdd59dbc9f865afba4e1ad",
+      "executable": "xray.exe"
+    }
+  }
+}

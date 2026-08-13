@@ -21,6 +21,12 @@ The suite currently checks:
 - actual Jinja rendering and JSON5 parsing of a representative VLESS Reality
   inbound;
 - locked runtime package metadata and the config-application pipeline.
+- exact Xray version selection from Hiddify's package lock;
+- checksum-verified installation of the official pinned Xray binary in CI;
+- full inherited server-config rendering and Xray's native `run -test` mode.
+
+See `docs/XRAY_RUNTIME_VALIDATION.md` for the exact version chain, commands,
+coverage, explicit runtime fixtures, and remaining integration gaps.
 
 ## Updating the baseline
 
@@ -35,5 +41,6 @@ old files automatically. When an intentional change modifies a protected file:
 
 Do not bulk-regenerate the fixture without reviewing each changed file.
 
-These checks do not replace clean-VPS installation, generated-config validation
-with the real Xray/Hiddify Core binaries, or security testing.
+These checks do not replace clean-VPS installation, live companion-service
+integration, or security testing. The generated Xray configuration itself is
+now validated with the pinned real Xray binary in CI.

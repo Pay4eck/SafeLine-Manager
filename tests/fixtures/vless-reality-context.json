@@ -3,12 +3,12 @@
     "core_type": "xray",
     "reality_enable": true,
     "log_level": "INFO",
-    "reality_private_key": "safeline-test-reality-private-key",
+    "reality_private_key": "dwdtCnMYpX08FsFyUbJmRd9ML4frwJkqsXf7pR25LCo",
     "reality_short_ids": "0123456789abcdef"
   },
   "domains": [
     {
-      "domain": "www.cloudflare.com",
+      "domain": "tcp.reality.example",
       "internal_port_special": 12000,
       "mode": "special_reality_tcp"
     }

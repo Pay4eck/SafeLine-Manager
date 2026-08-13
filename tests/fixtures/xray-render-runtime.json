@@ -1,0 +1,6 @@
+{
+  "description": "Explicit deterministic replacement for host data that common/jinja.py obtains by executing a shell command during a real installation.",
+  "command_outputs": {
+    "ip -o -4 addr show | awk '{print $4}' | cut -d/ -f1 | sed 's/.*/\"&\"/' | tr '\n' ',' ": "\"192.0.2.10\","
+  }
+}

@@ -6,3 +6,5 @@ __pycache__/
 *.py[cod]
 .coverage
 .pytest_cache/
+.test-runtime/
+.test-output/
