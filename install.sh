@@ -1,5 +1,8 @@
 #!/bin/bash
-cd $(dirname -- "$0")
+set -o pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+cd "$SCRIPT_DIR" || exit 1
 
 if [ -f "/opt/hiddify-manager/.safeline-smoke-install" ]; then
     export SAFELINE_SMOKE_TEST_MODE=1
@@ -11,7 +14,6 @@ fi
 
 source ./common/utils.sh
 NAME="0-install"
-LOG_FILE="$(log_file $NAME)"
 # Fix the installation directory
 if [ ! -d "/opt/hiddify-manager/" ] && [ -d "/opt/hiddify-server/" ]; then
     mv /opt/hiddify-server /opt/hiddify-manager
@@ -23,10 +25,20 @@ if [ ! -d "/opt/hiddify-manager/" ] && [ -d "/opt/hiddify-config/" ]; then
 fi
 
 export DEBIAN_FRONTEND=noninteractive
-if [ "$(id -u)" -ne 0 ]; then
-    echo 'This script must be run by root' >&2
-    exit 1
-fi
+function run_required_step() {
+    local description="$1"
+    shift
+    local rc
+
+    "$@"
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        error "$description failed with exit status $rc"
+        return "$rc"
+    fi
+    return 0
+}
+
 function main() {
     update_progress "Please wait..." "We are going to install Hiddify..." 0
     export ERROR=0
@@ -43,25 +55,24 @@ function main() {
 
     export USE_VENV=313
 
-    install_python
-    activate_python_venv
+    run_required_step "Python installation" install_python || return $?
+    run_required_step "Python virtual environment activation" activate_python_venv || return $?
     
     if [ "$MODE" != "apply_users" ]; then
         clean_files
         update_progress "${PROGRESS_ACTION}" "Common Tools and Requirements" 2
-        runsh install.sh common &
+        run_required_step "Common prerequisites installation" runsh install.sh common || return $?
         if [ "$MODE" != "docker" ];then
-            install_run other/redis &
-            install_run other/mysql &
-        fi    
-        wait
+            run_required_step "Redis installation" install_run other/redis || return $?
+            run_required_step "MariaDB installation" install_run other/mysql || return $?
+        fi
         # Because we need to generate reality pair in panel
         # is_installed xray || bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version 1.8.4
         
-        install_run hiddify-panel
+        run_required_step "Panel installation" install_run hiddify-panel || return $?
 
         if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
-            bash ./smoke-test/configure-profile.sh
+            run_required_step "SafeLine smoke profile configuration" bash ./smoke-test/configure-profile.sh || return $?
         fi
     fi
     
@@ -76,42 +87,40 @@ function main() {
     fi
     
     if [ "$MODE" != "apply_users" ]; then
-        bash ./other/deprecated/remove_deprecated.sh
+        run_required_step "Deprecated component cleanup" bash ./other/deprecated/remove_deprecated.sh || return $?
         update_progress "Configuring..." "System and Firewall settings" 10
-        runsh run.sh common &
+        run_required_step "Common system configuration" runsh run.sh common || return $?
         
         update_progress "${PROGRESS_ACTION}" "Nginx" 15
-        install_run nginx &
+        run_required_step "Nginx installation" install_run nginx || return $?
         
-        (
-            update_progress "${PROGRESS_ACTION}" "Haproxy for Spliting Traffic" 20
-            install_run haproxy
+        update_progress "${PROGRESS_ACTION}" "Haproxy for Spliting Traffic" 20
+        run_required_step "HAProxy installation" install_run haproxy || return $?
         
-            update_progress "${PROGRESS_ACTION}" "Getting Certificates" 30
-            if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
-                echo "SafeLine smoke mode: skip the moving get.acme.sh bootstrap; local self-signed setup remains available."
-            else
-                install_run acme.sh
-            fi
-        )&
+        update_progress "${PROGRESS_ACTION}" "Getting Certificates" 30
+        if [[ "$SAFELINE_SMOKE_TEST_MODE" == "1" || "$SAFELINE_SMOKE_TEST_MODE" == "true" ]]; then
+            echo "SafeLine smoke mode: skip the moving get.acme.sh bootstrap; local self-signed setup remains available."
+        else
+            run_required_step "ACME installation" install_run acme.sh || return $?
+        fi
         
         update_progress "${PROGRESS_ACTION}" "Personal SpeedTest" 35
-        install_run other/speedtest $(hconfig "speed_test") &
-        
+        run_required_step "Speedtest component" install_run other/speedtest "$(hconfig "speed_test")" || return $?
+
         update_progress "${PROGRESS_ACTION}" "dnstt Proxy" 40
-        install_run other/dnstt $(hconfig "dnstt_enable") &
+        run_required_step "DNSTT component" install_run other/dnstt "$(hconfig "dnstt_enable")" || return $?
 
         update_progress "${PROGRESS_ACTION}" "Telegram Proxy" 40
-        install_run other/telegram $(hconfig "telegram_enable") &
+        run_required_step "Telegram component" install_run other/telegram "$(hconfig "telegram_enable")" || return $?
         
         update_progress "${PROGRESS_ACTION}" "FakeTlS Proxy" 45
-        install_run other/ssfaketls $(hconfig "ssfaketls_enable") &
+        run_required_step "FakeTLS component" install_run other/ssfaketls "$(hconfig "ssfaketls_enable")" || return $?
         
         # update_progress "${PROGRESS_ACTION}" "V2ray WS Proxy" 50
         # install_run other/v2ray $ENABLE_V2RAY
         
         update_progress "${PROGRESS_ACTION}" "SSH Proxy" 55
-        install_run other/ssh 0 &
+        run_required_step "SSH proxy component" install_run other/ssh 0 || return $?
         
         #update_progress "${PROGRESS_ACTION}" "ShadowTLS" 60
         #install_run other/shadowtls $(hconfig "shadowtls_enable")
@@ -119,36 +128,35 @@ function main() {
         update_progress "${PROGRESS_ACTION}" "Warp" 70
         
         if [[ $(hconfig "warp_mode") != "disable" ]];then
-            install_run other/warp 1 &
+            run_required_step "WARP component" install_run other/warp 1 || return $?
         else   
-            install_run other/warp 0 &
+            run_required_step "WARP component disable" install_run other/warp 0 || return $?
         fi
 
         update_progress "${PROGRESS_ACTION}" "Xray" 75
         
-        install_run xray 1 &
+        run_required_step "Xray installation" install_run xray 1 || return $?
         
         
         update_progress "${PROGRESS_ACTION}" "HiddifyCli" 80
-        install_run other/hiddify-cli $(hconfig "hiddifycli_enable") &
+        run_required_step "CLI component" install_run other/hiddify-cli "$(hconfig "hiddifycli_enable")" || return $?
         
     fi
 
 
     update_progress "${PROGRESS_ACTION}" "Wireguard" 85
-    install_run other/wireguard $(hconfig "wireguard_enable") &
+    run_required_step "WireGuard component" install_run other/wireguard "$(hconfig "wireguard_enable")" || return $?
     
     update_progress "${PROGRESS_ACTION}" "Singbox" 95
-    install_run singbox &
+    run_required_step "Sing-box installation" install_run singbox || return $?
     
     update_progress "${PROGRESS_ACTION}" "Almost Finished" 98
-    wait 
     echo "---------------------Finished!------------------------"
     remove_lock $NAME
     if [ "$MODE" != "apply_users" ]; then
         systemctl kill -s SIGTERM hiddify-panel
     fi
-    systemctl start hiddify-panel
+    run_required_step "Panel service start" systemctl start hiddify-panel || return $?
     update_progress "${PROGRESS_ACTION}" "Done" 100
     
 }
@@ -183,58 +191,92 @@ function set_config_from_hpanel() {
 }
 
 function install_run() {
+    local rc
+
     echo "======================$1====================================={"
-   if [ "$DO_NOT_INSTALL" != "true" ];then
-            runsh install.sh $@
+    if [ "$DO_NOT_INSTALL" != "true" ];then
+        runsh install.sh "$@"
+        rc=$?
+        if [ "$rc" -ne 0 ]; then
+            error "$1 install.sh failed with exit status $rc"
+            return "$rc"
+        fi
         if [ "$MODE" != "apply_users" ] && [ "$MODE" != "docker"  ]; then
-            systemctl daemon-reload
+            systemctl daemon-reload || return $?
         fi
     fi
     if [ "$DO_NOT_RUN" != "true" ];then
-         runsh run.sh $@
-    fi   
+        runsh run.sh "$@"
+        rc=$?
+        if [ "$rc" -ne 0 ]; then
+            error "$1 run.sh failed with exit status $rc"
+            return "$rc"
+        fi
+    fi
     echo "}========================$1==================================="
+    return 0
 }
 
 function runsh() {
-    command=$1
-    if [[ $3 == "false" || $3 == "0" ]]; then
+    local command=$1
+    local component_dir=$2
+    local rc=0
+    local popd_rc=0
+
+    if [[ ${3:-} == "false" || ${3:-} == "0" ]]; then
         command=disable.sh
     fi
-    pushd $2 >>/dev/null
-    # if [[ $? != 0]];then
-    #         echo "$2 not found"
-    # fi
-    if [[ $? == 0 && -f $command ]]; then
-        
-        echo "===$command $2"
-        bash $command
+
+    pushd "$component_dir" >>/dev/null || return $?
+    if [ -f "$command" ]; then
+        echo "===$command $component_dir"
+        bash "$command"
+        rc=$?
     fi
-    popd >>/dev/null
+    popd >>/dev/null || popd_rc=$?
+
+    if [ "$rc" -ne 0 ]; then
+        return "$rc"
+    fi
+    return "$popd_rc"
 }
 
-if [[ " $@ " == *" --no-gui "* ]]; then
-    set -- "${@/--no-gui/}"
-    export MODE="$1"
-    set_lock $NAME
-    if [[ " $@ " == *" --no-log "* ]]; then
-        set -- "${@/--no-log/}"
-        main
-    else
-        main |& tee $LOG_FILE
-    fi
-    error_code=$?
-    remove_lock $NAME
-else
-    show_progress_window --subtitle $(get_installed_config_version) --log $LOG_FILE ./install.sh $@ --no-gui --no-log
-    error_code=$?
-    if [[ $error_code != "0" ]]; then
-        # echo less -r -P"Installation Failed! Press q to exit" +G "$log_file"
-        msg_with_hiddify "Installation Failed! $error_code"
-    else
-        msg_with_hiddify "The installation has successfully completed."
-        check_hiddify_panel $@ |& tee -a $LOG_FILE
-    fi
-fi
+function installer_entrypoint() {
+    local error_code
 
-exit $error_code
+    if [ "$(id -u)" -ne 0 ]; then
+        echo 'This script must be run by root' >&2
+        return 1
+    fi
+    LOG_FILE="$(log_file "$NAME")"
+
+    if [[ " $@ " == *" --no-gui "* ]]; then
+        set -- "${@/--no-gui/}"
+        export MODE="$1"
+        set_lock "$NAME"
+        if [[ " $@ " == *" --no-log "* ]]; then
+            set -- "${@/--no-log/}"
+            main
+        else
+            main |& tee "$LOG_FILE"
+        fi
+        error_code=$?
+        remove_lock "$NAME"
+    else
+        show_progress_window --subtitle "$(get_installed_config_version)" --log "$LOG_FILE" ./install.sh "$@" --no-gui --no-log
+        error_code=$?
+        if [[ $error_code != "0" ]]; then
+            msg_with_hiddify "Installation Failed! $error_code"
+        else
+            msg_with_hiddify "The installation has successfully completed."
+            check_hiddify_panel "$@" |& tee -a "$LOG_FILE"
+        fi
+    fi
+
+    return "$error_code"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    installer_entrypoint "$@"
+    exit $?
+fi

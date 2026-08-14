@@ -18,7 +18,7 @@
     "hiddify-panel/src/hiddifypanel/panel/commercial/restapi/v2/admin/users_api.py": "5d1288827d0f9d6ff8cd1eb0ae827299fdff0424c42ca42b40e9369a819e3a25",
     "hiddify-panel/src/hiddifypanel/panel/user/user.py": "fa979aaacedddf93be36218b7156631b888374e115ff7a227e13e4384f602d10",
     "hiddify-panel/src/pyproject.toml": "08b4206d54a561f5f78d1248ba6037a7c4b4a2a86ab27fe876f9b5f5a4fc13e1",
-    "install.sh": "d0a8a4b50ea1c0c9c98e3378ce071fe6873dc499df1858afe08b2de3e61e2f18",
+    "install.sh": "2e323717942a016306fe64467aac182917032e9eb4b3b396234c1a1be06d0914",
     "update.sh": "d93f792e249e77e22d476d3945d79c8b0f1c909140a5b3dfe900bab346a136b5",
     "xray/configs/05_inbounds_02_reality_main.json.j2": "0c729948d73a1135707153f545cc5149d66e6f673c4ef4b23df3c9e54f358357",
     "xray/configs/common/protocols/vless.pj2": "32930db97d9ccd6471cc690fdf792c93552c77e8f3ac616611e015839c58e442"

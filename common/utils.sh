@@ -146,41 +146,84 @@ function install_pypi_package() {
     done
 }
 function is_installed_package() {
-    package_spec="$1"
+    local package_spec="$1"
+    local package_name="${package_spec%%=*}"
+    local requested_version=""
+    local installed_status
+    local installed_version
 
-    # Extract package name and version from the package specification
-    package_name=$(echo "$1" | cut -d'=' -f1)
-    version=$(echo "$1" | cut -s -d'=' -f2)
-    if dpkg -l | grep -qE "^ii  $package_name *$version"; then
-        return 0
-    else
-        echo "$package_name version $version is not installed."
+    installed_status=$(dpkg-query -W -f='${Status}' "$package_name" 2>/dev/null) || {
+        echo "$package_name is not installed."
         return 1
+    }
+    [ "$installed_status" = "install ok installed" ] || {
+        echo "$package_name is not fully installed."
+        return 1
+    }
+
+    if [[ "$package_spec" == *=* ]]; then
+        requested_version="${package_spec#*=}"
+        installed_version=$(dpkg-query -W -f='${Version}' "$package_name" 2>/dev/null) || return 1
+        if [[ "$installed_version" != $requested_version ]]; then
+            echo "$package_name version $requested_version is not installed (found $installed_version)."
+            return 1
+        fi
     fi
+    return 0
 }
 install_package() {
-    local not_installed_packages=""
+    local -a not_installed_packages=()
     local package
+    local apt_rc=0
+    local attempt
 
     for package in "$@"; do
         if ! is_installed_package "$package"; then
-            # The package is not installed, add it to the list
-            not_installed_packages+=" $package"
+            not_installed_packages+=("$package")
         fi
     done
 
-    if [ -n "$not_installed_packages" ]; then
-        apt install -y --no-install-recommends $not_installed_packages
+    if [ "${#not_installed_packages[@]}" -gt 0 ]; then
+        apt install -y --no-install-recommends "${not_installed_packages[@]}"
+        apt_rc=$?
 
-        # Check if installation failed
-        if [ $? -ne 0 ]; then
+        if [ "$apt_rc" -ne 0 ]; then
             apt --fix-broken install -y
+            apt_rc=$?
+            if [ "$apt_rc" -ne 0 ]; then
+                error "apt --fix-broken failed with exit status $apt_rc"
+                return "$apt_rc"
+            fi
+
             apt update
-            #retries for 3 times
-            apt install -y $not_installed_packages ||apt install -y $not_installed_packages||apt install -y $not_installed_packages
-            
+            apt_rc=$?
+            if [ "$apt_rc" -ne 0 ]; then
+                error "apt update failed with exit status $apt_rc"
+                return "$apt_rc"
+            fi
+
+            apt_rc=1
+            for attempt in 1 2 3; do
+                apt install -y --no-install-recommends "${not_installed_packages[@]}"
+                apt_rc=$?
+                [ "$apt_rc" -eq 0 ] && break
+                warning "apt install attempt $attempt failed with exit status $apt_rc"
+            done
+
+            if [ "$apt_rc" -ne 0 ]; then
+                error "apt failed to install requested packages after all retries"
+                return "$apt_rc"
+            fi
         fi
     fi
+
+    for package in "$@"; do
+        if ! is_installed_package "$package"; then
+            error "Required package $package is absent after apt completed"
+            return 1
+        fi
+    done
+    return 0
 }
 
 function remove_package() {
