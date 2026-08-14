@@ -1,5 +1,6 @@
 #!/bin/bash
 source utils.sh
+source cron_jobs.sh || exit $?
 remove_package apache2 needrestart needrestart-session
 install_package apt-transport-https apt-utils at build-essential ca-certificates cron curl default-libmysqlclient-dev dnsutils gawk git gnupg-agent gnupg2 iproute2 iptables jq less libev-dev libevdev2 libssl-dev locales lsb-release lsof pkg-config qrencode software-properties-common sudo ubuntu-keyring wget whiptail
 activate_python_venv
@@ -75,9 +76,7 @@ bash google-bbr.sh > /dev/null
 
 
 echo "@reboot root /opt/hiddify-manager/install.sh --no-gui --no-log >> /opt/hiddify-manager/log/system/reboot.log 2>&1" >/etc/cron.d/hiddify_reinstall_on_reboot
-mv /etc/cron.d/hiddify_daily_memory_release /etc/cron.d/hiddify_daily
-echo "@daily root /opt/hiddify-manager/common/daily_actions.sh >> /opt/hiddify-manager/log/system/daily_actions.log 2>&1" >/etc/cron.d/hiddify_daily
-service cron reload
+install_daily_cron || exit $?
 
 if [ "${MODE}" != "docker" ];then
   localectl set-locale LANG=C.UTF-8

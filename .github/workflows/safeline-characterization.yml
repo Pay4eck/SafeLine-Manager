@@ -38,6 +38,8 @@ jobs:
           install.sh
           update.sh
           hiddify-panel/install.sh
+          common/install.sh
+          common/cron_jobs.sh
           common/utils.sh
           other/redis/install.sh
           common/hiddify_installer.sh
