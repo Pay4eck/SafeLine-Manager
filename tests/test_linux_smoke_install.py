@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shutil
+import subprocess
 import unittest
 
 from ast_helpers import source_path
@@ -53,6 +55,59 @@ class LinuxSmokeInstallPreparationTests(unittest.TestCase):
             hashlib.sha256((SMOKE_ROOT / filename).read_bytes()).hexdigest(),
             expected,
         )
+
+    def test_uv_version_check_accepts_architecture_suffix_and_requires_exact_pin(self):
+        self.assertIn("uv_output=$(/usr/local/bin/uv --version)", self.installer)
+        self.assertIn('uv_version=$(parse_uv_semantic_version "$uv_output")', self.installer)
+        self.assertIn('[ "$uv_version" = "$UV_VERSION" ]', self.installer)
+        self.assertIn("/usr/local/bin/uv python install", self.installer)
+        self.assertIn("/usr/local/bin/uv venv", self.installer)
+        self.assertIn("/usr/local/bin/uv sync --frozen", self.installer)
+        self.assertNotIn('$(uv --version)', self.installer)
+
+        bash = shutil.which("bash")
+        if bash is None:
+            self.skipTest("bash is required for the installer parser regression test")
+
+        parser = SMOKE_ROOT / "uv-version.sh"
+        check_command = (
+            'source "$1"; '
+            'uv_version=$(parse_uv_semantic_version "$2") || exit 1; '
+            'printf "%s\\n" "$uv_version"; '
+            '[ "$uv_version" = "$3" ]'
+        )
+        completed = subprocess.run(
+            [
+                bash,
+                "-c",
+                check_command,
+                "uv-version-regression",
+                str(parser),
+                "uv 0.11.16 (x86_64-unknown-linux-gnu)",
+                "0.11.16",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stdout.strip(), "0.11.16")
+
+        wrong_pin = subprocess.run(
+            [
+                bash,
+                "-c",
+                check_command,
+                "uv-version-regression",
+                str(parser),
+                "uv 0.11.17 (x86_64-unknown-linux-gnu)",
+                "0.11.16",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(wrong_pin.returncode, 0)
 
     def test_component_lock_matches_the_imported_panel_and_binary_locks(self):
         baseline = json.loads(source_path("tests/fixtures/upstream-v12.3.3.json").read_text(encoding="utf-8"))

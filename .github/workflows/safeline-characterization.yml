@@ -33,6 +33,7 @@ jobs:
           bash -n
           smoke-test/install-pinned.sh
           smoke-test/configure-profile.sh
+          smoke-test/uv-version.sh
           smoke-test/verify-install.sh
           install.sh
           update.sh

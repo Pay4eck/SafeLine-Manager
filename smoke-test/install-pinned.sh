@@ -46,6 +46,8 @@ require_empty_test_host() {
 install_pinned_uv() {
     local archive="$BOOTSTRAP_TMP/uv.tar.gz"
     local extract_dir="$BOOTSTRAP_TMP/uv"
+    local uv_output
+    local uv_version
 
     curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
         --retry 3 --output "$archive" "$UV_AMD64_URL"
@@ -56,7 +58,11 @@ install_pinned_uv() {
     tar -xzf "$archive" -C "$extract_dir"
     [ -f "$extract_dir/uv-x86_64-unknown-linux-gnu/uv" ] || die "unexpected uv archive layout"
     install -m 0755 "$extract_dir/uv-x86_64-unknown-linux-gnu/uv" /usr/local/bin/uv
-    [ "$(uv --version)" = "uv $UV_VERSION" ] || die "installed uv version does not match $UV_VERSION"
+    uv_output=$(/usr/local/bin/uv --version) || die "installed uv did not report its version"
+    uv_version=$(parse_uv_semantic_version "$uv_output") || \
+        die "installed uv returned an unrecognized version string"
+    [ "$uv_version" = "$UV_VERSION" ] || \
+        die "installed uv version $uv_version does not match $UV_VERSION"
 }
 
 COMMIT=""
@@ -104,6 +110,7 @@ ACTUAL_COMMIT=$(git -C "$INSTALL_ROOT" rev-parse HEAD)
 [ "$(git -C "$INSTALL_ROOT" remote get-url origin)" = "$SAFELINE_REPOSITORY" ] || die "unexpected Manager origin"
 
 source "$INSTALL_ROOT/smoke-test/components.lock"
+source "$INSTALL_ROOT/smoke-test/uv-version.sh"
 
 PINNED_GITLINK=$(git -C "$INSTALL_ROOT" ls-tree HEAD hiddify-panel/src | awk '{print $3}')
 [ "$PINNED_GITLINK" = "$PANEL_COMMIT" ] || die "Panel gitlink does not match components.lock"
@@ -144,13 +151,13 @@ esac
 trap cleanup_bootstrap_tmp EXIT
 install_pinned_uv
 
-UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python uv python install "$PYTHON_VERSION"
-UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python uv venv \
+UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python /usr/local/bin/uv python install "$PYTHON_VERSION"
+UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python /usr/local/bin/uv venv \
     "$INSTALL_ROOT/.venv313" --python "$PYTHON_VERSION"
 UV_NO_SYSTEM_CONFIG=1 \
 UV_PYTHON_INSTALL_DIR=/usr/local/share/uv/python \
 UV_PROJECT_ENVIRONMENT="$INSTALL_ROOT/.venv313" \
-    uv sync --frozen --no-dev --project "$INSTALL_ROOT/hiddify-panel/src"
+    /usr/local/bin/uv sync --frozen --no-dev --project "$INSTALL_ROOT/hiddify-panel/src"
 [ "$("$INSTALL_ROOT/.venv313/bin/python" --version)" = "Python $PYTHON_VERSION" ] || \
     die "Panel Python does not match $PYTHON_VERSION"
 
